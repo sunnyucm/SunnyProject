@@ -1,0 +1,99 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fieldReference"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String    @id @default(cuid()) @map("_id")
+  name     String
+  password String
+  email    String    @unique
+  role     Role      @default(CUSTOMER)
+  orders   Order[]
+  payments Payment[]
+
+  @@map("user")
+}
+
+model Product {
+  id          String @id @default(cuid()) @map("_id")
+  name        String
+  slug        String @unique
+  description String
+  image       String
+  quantity    Int
+  price       Float
+  guarantee   Int
+  maintenance Int
+
+  category String
+  orders   ProductOrder[]
+
+  @@map("product")
+}
+
+model Order {
+  id        String      @id @default(cuid()) @map("_id")
+  createdAt DateTime    @default(now())
+  status    OrderStatus
+  type      OrderType   @default(PICKUP)
+
+  payment  Payment?
+  products ProductOrder[]
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String
+
+  @@map("order")
+}
+
+model Payment {
+  id            String        @id @default(cuid()) @map("_id")
+  createdAt     DateTime      @default(now())
+  amount        Float
+  paymentMethod PaymentMethod
+
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  orderId String @unique
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId  String
+}
+
+model ProductOrder {
+  id       String @id @default(cuid()) @map("_id")
+  quantity Int
+  amount   Float
+  serialNo String
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  productId String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  orderId   String
+
+  @@map("product_order")
+}
+
+enum OrderType {
+  PICKUP
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+}
+
+enum OrderStatus {
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}

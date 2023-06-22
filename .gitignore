@@ -1,0 +1,15 @@
+yarn.lock
+pnpm-lock.yaml
+pnpm-lock.yml
+
+/build
+/public/build
+.env
+
+/cypress/screenshots
+/cypress/videos
+/postgres-data
+
+/node_modules
+
+**/.DS_Store
